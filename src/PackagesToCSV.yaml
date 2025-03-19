@@ -1,4 +1,5 @@
 ﻿- name: Print packages to CSV (run on all hosts)
+  # >> Change this! <<
   hosts: myhosts
   tasks:
     - name: Index packages using the local package manager
