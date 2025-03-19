@@ -1,0 +1,27 @@
+﻿- name: Print packages to CSV (run on all hosts)
+  hosts: myhosts
+  tasks:
+    - name: Index packages using the local package manager
+      ansible.builtin.package_facts:
+        manager: auto
+
+    - name: Create spreadsheet for each host
+      file:
+        path: "./{{ inventory_hostname }}_report.csv"
+        state: touch
+      delegate_to: localhost
+
+    - name: Adding initial line to spreadsheets
+      lineinfile:
+        insertafter: EOF
+        dest: "./{{ inventory_hostname }}_report.csv"
+        line: Package Name,Version
+      delegate_to: localhost
+
+    - name: Write package information to CSV
+      lineinfile:
+        path: "./{{ inventory_hostname }}_report.csv"
+        line: "{{ item.name }},{{ ansible_facts.packages[item.name][0]['version'] }}"
+      loop: "{{ ansible_facts.packages | dict2items(key_name='name', value_name='version') }}"
+      when: ansible_facts.packages is defined
+      delegate_to: localhost
